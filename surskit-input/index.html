@@ -41,6 +41,7 @@
         var pokeballCatch;
         var pokeballTilt = 1;
         var wobbleCounter;
+        var emitter;
         
         function preload () {
             game.load.image('surskit', 'Surskit.png');
@@ -140,17 +141,18 @@
                     }
                     
                     if (wobbleCounter >= 5) {
-                        
-                      console.log ('5 times');  
-                        
-                        
+                        if (pokeballCatch.angle == 0) {
+                            pokeballTilt = 0
+
+                            game.add.sprite ('stars','Gold_Star.png');
+
+                            emitter = game.add.emitter(0, 0, 100);
+
+                            emitter.makeParticles('stars');
+                            emitter.gravity = 200;
+                        }
                     }
-                    
-                    
-                    
                 }
-            
-            
             }
         }
         
