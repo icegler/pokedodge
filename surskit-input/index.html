@@ -22,9 +22,9 @@
         // When Sirskit gets hit
         // - pause pokeballs in background/
         // - do a close up of the pokeball (surskit not visible)/
-        // - you have to hit space bar 5 times,/ to then trigger 25% posibility of catch
-        // - - If a catch, game over?
-        // - - Else carry on
+        // - you have to hit space bar 5 times,/ to then trigger 25% posibility of catch/
+        // - - If a catch, game over?/
+        // - - Else carry on/
         // As times goes on, harder balls start to appear
 
         var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
@@ -43,6 +43,8 @@
         var wobbleCounter;
         var emitter;
         var gamePart = 'main';
+        var timerLabel;
+        var startTime;
         
         function preload () {
             game.load.image('surskit', 'Surskit.png');
@@ -64,15 +66,20 @@
             
             pokeBalls = game.add.group();
             game.time.events.loop(550, createSprite, this);
-            
+            createTimer();
         }
-                
+
+        function createTimer() {
+            timerLabel = game.add.text(game.world.width - 20, 20, "00:00", {font: "50px Arial", fill: "#000"}); 
+            timerLabel.anchor.setTo(1, 0);
+            timerLabel.align = 'left';
+            startTime = new Date();
+        }
+
         function createSprite() {
-        
             var PokeBall = pokeBalls.create(game.world.randomX,630, 'pokeBall');
             PokeBall.scale.setTo(0.25, 0.25);
             pokeBalls.forEach(checkSprite, this, true);
-        
         }
         
         function checkSprite(sprite) {
@@ -105,6 +112,20 @@
                 game.add.image(-150, 0, 'Viola').scale.setTo(0.85, 0.85);
                 gamePart = 'nothing';
             }
+
+            if (gamePart == 'escape') {
+                destroySprite(pokeballCatch);
+                surskit.visible = true;
+                gamePart = 'main';
+
+                pokeBalls.callAll('kill');
+            }   
+        }
+
+        function destroySprite (pokeballCatch) {
+
+            pokeballCatch.destroy();
+
         }
 
         function runMainGamePart() {
@@ -121,17 +142,27 @@
                 pokeballCatch = game.add.sprite(game.world.width/2,game.world.height/2, 'pokeBall');
                 pokeballCatch.scale.setTo(2,2);
                 pokeballCatch.anchor.setTo(0.5, 0.5);
-                surskit.x = game.world.width/2;
-                surskit.y = game.world.height/2;
+                //surskit.x = game.world.width/2;
+                //surskit.y = game.world.height/2;
+                surskit.visible = false;
                 gamePart = 'breakout';
                 spaceCounter = 0;
                 wobbleCounter = 0;
+                pokeballTilt = 1;
                 spaceBarPreviousState = false;
             }
     
             handleSurskitMovement();
                 
             pokeBalls.setAll('y', -5, true, true, 1);
+
+            var currentTime = new Date();
+            var dif = currentTime.getTime() - startTime.getTime();
+            var secondsPassed = dif / 1000;
+            var seconds = Math.floor(secondsPassed);
+            var minutesPassed = Math.floor(seconds / 60);
+            var remainingSeconds = Math.floor(seconds - (minutesPassed * 60));
+            timerLabel.text = `${minutesPassed.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
 
         function runBreakoutGamePart() {
@@ -142,8 +173,7 @@
                     
             }
                 
-            spaceBarPreviousState = spaceBarIsDown;
-                
+            spaceBarPreviousState = spaceBarIsDown;   
                 
             if (spaceCounter >= 10) {
                 //Wobble and percentage of break out to 25%
@@ -180,7 +210,7 @@
                         emitter.start(true, 4000, null, 6);
 
                     } else {
-                        gamePart = 'main';
+                        gamePart = 'escape';
 
 
                     }
